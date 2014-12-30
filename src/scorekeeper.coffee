@@ -28,6 +28,7 @@ class ScoreKeeper
 
   getUser: (user) ->
     @cache.scores[user] ||= 0
+    @cache.scoreReasons[user] ||= {}
     user
 
   saveUser: (user, from, room, reason) ->
@@ -67,6 +68,20 @@ class ScoreKeeper
       @saveUser(user, from, room, reason)
     else
       [null, null]
+
+  erase: (user, from, room, reason) ->
+    user = @getUser(user)
+
+    if reason
+      delete @cache.scoreReasons[user][reason]
+      @saveUser(user, from.name, room)
+      return true
+    else
+      delete @cache.scores[user]
+      delete @cache.scoreReasons[user]
+      return true
+
+    false
 
   scoreForUser: (user) ->
     user = @getUser(user)
