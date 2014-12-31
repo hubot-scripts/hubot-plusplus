@@ -10,9 +10,10 @@
 # Commands:
 #   <name>++
 #   <name>--
-#   hubot score <name>
+#   hubot score <name> [for <reason>]
 #   hubot top <amount>
 #   hubot bottom <amount>
+#   hubot erase <user> [<reason>]
 #   GET http://<url>/hubot/scores[?name=<name>][&direction=<top|botton>][&limit=<10>]
 #
 # Author:
@@ -65,6 +66,29 @@ module.exports = (robot) ->
         reason: reason
       }
 
+  robot.respond /erase ([\w\S'.\s]+?)(?:[\W\s]*)?(?: (?:for|because|cause|cuz) (.+))?$/i, (msg) ->
+    [__, name, reason] = msg.match
+    from = msg.message.user.name.toLowerCase()
+    user = msg.envelope.user
+    room = msg.message.room
+
+    reason = reason?.trim().toLowerCase()
+    name = name?.trim().toLowerCase()
+
+    isAdmin = @robot.auth?.hasRole(user, 'plusplus-admin') or @robot.auth?.hasRole(user, 'admin')
+
+    if not @robot.auth? or isAdmin
+      erased = scoreKeeper.erase(name, from, room, reason)
+    else
+      return msg.reply "Sorry, you don't have authorization to do that."
+
+    if erased?
+      message = if reason?
+                  "Erased the following reason from #{name}: #{reason}"
+                else
+                  "Erased points for #{name}"
+      msg.send message
+
   robot.respond /score (for\s)?(.*)/i, (msg) ->
     name = msg.match[2].trim().toLowerCase()
     score = scoreKeeper.scoreForUser(name)
@@ -95,7 +119,7 @@ module.exports = (robot) ->
 
     msg.send message.join("\n")
 
-  robot.router.get "/hubot/normalize-points", (req, res) ->
+  robot.router.get "/#{robot.name}/normalize-points", (req, res) ->
     scoreKeeper.normalize((score) ->
       if score > 0
         score = score - Math.ceil(score / 10)
@@ -107,7 +131,7 @@ module.exports = (robot) ->
 
     res.end JSON.stringify('done')
 
-  robot.router.get "/hubot/scores", (req, res) ->
+  robot.router.get "/#{robot.name}/scores", (req, res) ->
     query = querystring.parse(req._parsedUrl.query)
 
     if query.name
@@ -120,5 +144,4 @@ module.exports = (robot) ->
 
       tops = scoreKeeper[direction](amount)
 
-      res.end JSON.stringify(tops)
-
+      res.end JSON.stringify(tops, null, 2)
