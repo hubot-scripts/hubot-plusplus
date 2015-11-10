@@ -14,7 +14,9 @@
 #   hubot top <amount>
 #   hubot bottom <amount>
 #   hubot erase <user> [<reason>]
-#   GET http://<url>/hubot/scores[?name=<name>][&direction=<top|botton>][&limit=<10>]
+#
+# URLs:
+#   /hubot/scores[?name=<name>][&direction=<top|botton>][&limit=<10>]
 #
 # Author:
 #   ajacksified
@@ -33,7 +35,7 @@ module.exports = (robot) ->
     # from beginning of line
     ^
     # the thing being upvoted, which is any number of words and spaces
-    ([\s\w'@.-:]*)
+    ([\s\w'@.\-:]*)
     # allow for spaces after the thing being upvoted (@user ++)
     \s*
     # the increment/decrement operator ++ or --
@@ -49,7 +51,12 @@ module.exports = (robot) ->
 
     # do some sanitizing
     reason = reason?.trim().toLowerCase()
-    name = (name.replace /(^\s*@)|([,:\s]*$)/g, "").trim().toLowerCase() if name
+
+    if name
+      if name.charAt(0) == ":"
+        name = (name.replace /(^\s*@)|([,\s]*$)/g, '').trim().toLowerCase()
+      else
+        name = (name.replace /(^\s*@)|([,:\s]*$)/g, '').trim().toLowerCase()
 
     # check whether a name was specified. use MRU if not
     unless name? && name != ''
@@ -74,21 +81,22 @@ module.exports = (robot) ->
                     "#{name} has #{score} point"
                   else
                     "#{name} has #{score} points"
-                  
+
 
       msg.send message
 
       robot.emit "plus-one", {
-        name: name
+        name:      name
         direction: operator
-        room: room
-        reason: reason
+        room:      room
+        reason:    reason
+        from:      from
       }
 
   robot.respond ///
     (?:erase )
     # thing to be erased
-    ([\s\w'@.-]+?)
+    ([\s\w'@.-:]+?)
     # optionally erase a reason from thing
     (?:\s+(?:for|because|cause|cuz)\s+(.+))?
     $ # eol
@@ -98,7 +106,12 @@ module.exports = (robot) ->
     user = msg.envelope.user
     room = msg.message.room
     reason = reason?.trim().toLowerCase()
-    name = (name.replace /(^\s*@)|([,:\s]*$)/g, "").trim().toLowerCase() if name
+
+    if name
+      if name.charAt(0) == ":"
+        name = (name.replace /(^\s*@)|([,\s]*$)/g, "").trim().toLowerCase()
+      else
+        name = (name.replace /(^\s*@)|([,:\s]*$)/g, "").trim().toLowerCase()
 
     isAdmin = @robot.auth?.hasRole(user, 'plusplus-admin') or @robot.auth?.hasRole(user, 'admin')
 
