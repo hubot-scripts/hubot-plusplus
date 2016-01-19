@@ -6,6 +6,8 @@
 #   "clark": "0.0.6"
 #
 # Configuration:
+#   HUBOT_PLUSPLUS_POINT: optional, use your own word for points, default: point
+#   HUBOT_PLUSPLUS_POINTS: optional, plural term for points, default HUBOT_PLUSPLUS_POINT + 's'
 #
 # Commands:
 #   <name>++
@@ -28,6 +30,8 @@ querystring = require('querystring')
 ScoreKeeper = require('./scorekeeper')
 
 module.exports = (robot) ->
+  point = process.env.HUBOT_PLUSPLUS_POINT or 'point'
+  points = process.env.HUBOT_PLUSPLUS_POINTS or "#{point}s"
   scoreKeeper = new ScoreKeeper(robot)
 
   # sweet regex bro
@@ -73,14 +77,14 @@ module.exports = (robot) ->
     if score?
       message = if reason?
                   if reasonScore == 1 or reasonScore == -1
-                    "#{name} has #{score} points, #{reasonScore} of which is for #{reason}."
+                    "#{name} has #{score} #{points}, #{reasonScore} of which is for #{reason}."
                   else
-                    "#{name} has #{score} points, #{reasonScore} of which are for #{reason}."
+                    "#{name} has #{score} #{points}, #{reasonScore} of which are for #{reason}."
                 else
                   if score == 1
-                    "#{name} has #{score} point"
+                    "#{name} has #{score} #{point}"
                   else
-                    "#{name} has #{score} points"
+                    "#{name} has #{score} #{points}"
 
 
       msg.send message
@@ -124,7 +128,7 @@ module.exports = (robot) ->
       message = if reason?
                   "Erased the following reason from #{name}: #{reason}"
                 else
-                  "Erased points for #{name}"
+                  "Erased #{points} for #{name}"
       msg.send message
 
   robot.respond /score (for\s)?(.*)/i, (msg) ->
@@ -133,12 +137,12 @@ module.exports = (robot) ->
     reasons = scoreKeeper.reasonsForUser(name)
 
     reasonString = if typeof reasons == 'object' && Object.keys(reasons).length > 0
-                     "#{name} has #{score} points. here are some raisins:" +
+                     "#{name} has #{score} #{points}. here are some raisins:" +
                      _.reduce(reasons, (memo, val, key) ->
-                       memo += "\n#{key}: #{val} points"
+                       memo += "\n#{key}: #{val} #{points}"
                      , "")
                    else
-                     "#{name} has #{score} points."
+                     "#{name} has #{score} #{points}."
 
     msg.send reasonString
 
@@ -160,7 +164,7 @@ module.exports = (robot) ->
 
     msg.send message.join("\n")
 
-  robot.router.get "/#{robot.name}/normalize-points", (req, res) ->
+  robot.router.get "/#{robot.name}/normalize-#{points}", (req, res) ->
     scoreKeeper.normalize((score) ->
       if score > 0
         score = score - Math.ceil(score / 10)
