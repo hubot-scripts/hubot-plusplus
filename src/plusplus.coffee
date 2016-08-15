@@ -41,11 +41,11 @@ module.exports = (robot) ->
     # the increment/decrement operator ++ or --
     ([-+]{2}|—)
     # optional reason for the plusplus
-    (?:\s+(?:for|because|cause|cuz)\s+(.+))?
+    (?:\s+(?:(for|because|cause|cuz))\s+(.+))?
     $ # end of line
   ///i, (msg) ->
     # let's get our local vars in place
-    [dummy, name, operator, reason] = msg.match
+    [dummy, name, operator, reasonToken, reason] = msg.match
     from = msg.message.user.name.toLowerCase()
     room = msg.message.room
 
@@ -73,9 +73,9 @@ module.exports = (robot) ->
     if score?
       message = if reason?
                   if reasonScore == 1 or reasonScore == -1
-                    "#{name} has #{score} points, #{reasonScore} of which is for #{reason}."
+                    "#{name} has #{score} points, #{reasonScore} of which is #{reasonToken} #{reason}."
                   else
-                    "#{name} has #{score} points, #{reasonScore} of which are for #{reason}."
+                    "#{name} has #{score} points, #{reasonScore} of which are #{reasonToken} #{reason}."
                 else
                   if score == 1
                     "#{name} has #{score} point"
