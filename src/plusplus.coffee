@@ -41,7 +41,7 @@ module.exports = (robot) ->
     # the increment/decrement operator ++ or --
     ([-+]{2}|—)
     # optional reason for the plusplus
-    (?:\s+(?:for|because|cause|cuz)\s+(.+))?
+    (?:\s+(?:for|because|cause|cuz|pour)\s+(.+))?
     $ # end of line
   ///i, (msg) ->
     # let's get our local vars in place
@@ -98,7 +98,7 @@ module.exports = (robot) ->
     # thing to be erased
     ([\s\w'@.-:]+?)
     # optionally erase a reason from thing
-    (?:\s+(?:for|because|cause|cuz)\s+(.+))?
+    (?:\s+(?:for|because|cause|cuz|pour)\s+(.+))?
     $ # eol
   ///i, (msg) ->
     [__, name, reason] = msg.match
