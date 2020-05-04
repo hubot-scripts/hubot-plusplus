@@ -34,7 +34,7 @@ robot.emit "plus-one", {
 
 ## Installation
 
-Run the following command 
+Run the following command
 
     $ npm install hubot-plusplus
 
@@ -46,3 +46,16 @@ To enable the script, add a `hubot-plusplus` entry to the `external-scripts.json
 file (you may need to create this file).
 
     ["hubot-plusplus"]
+
+## Configuration
+
+You can optionally set the term used to points to another word if desired.
+
+    HUBOT_PLUSPLUS_POINT: the singular term, default 'point'
+    HUBOT_PLUSPLUS_POINTS: the plural term, default is the singular term with an 's' appended
+
+For example, setting `HUBOT_PLUSPLUS_POINT=onion` would result in hubot responding with:
+
+    bruce: thing++
+    hubot: thing has 1 onion
+
